@@ -46,16 +46,13 @@ public class MainWindow {
     JButton cancelButton = new JButton("Cancel query");
 	
 	public MainWindow() {
-		promptManager = new PromptManager(this);
-	    JFrame jFrame=new JFrame();
-	    jFrame.setTitle("");
-	    jFrame.setSize(600, 500);
-	        jFrame.setLocationRelativeTo(null);
-
-	    // Terminate app if this window is closed
-	    jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setUpGUI();
 	    
-	    listeningButton.addItemListener((itemEvent) -> {
+	    setUpListeners();
+	}
+
+	private void setUpListeners() {
+		listeningButton.addItemListener((itemEvent) -> {
 	        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 	        	if (speechToTextListener == null) {
 		        	speechToTextListener = new SpeechToTextListener(this);
@@ -88,6 +85,17 @@ public class MainWindow {
 	    		promptManager.goBackToPreviousPrompt();
 	    	}
 	    });
+	}
+
+	private void setUpGUI() {
+		promptManager = new PromptManager(this);
+	    JFrame jFrame=new JFrame();
+	    jFrame.setTitle("");
+	    jFrame.setSize(600, 500);
+	        jFrame.setLocationRelativeTo(null);
+
+	    // Terminate app if this window is closed
+	    jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    
 	    promptSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	    promptTA.setWrapStyleWord(true);
@@ -117,7 +125,7 @@ public class MainWindow {
 	        public void actionPerformed(ActionEvent e) {
 	            try {
 	                if (undoManager.canRedo()) {
-	                    //undoManager.redo();
+	                    undoManager.redo();
 	                }
 	            } catch (CannotUndoException exp) {
 	                exp.printStackTrace();
