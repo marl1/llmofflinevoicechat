@@ -19,6 +19,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.text.DefaultCaret;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
@@ -55,6 +56,8 @@ public class MainWindow {
 		listeningButton.addItemListener((itemEvent) -> {
 	        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 	        	if (speechToTextListener == null) {
+	            	promptTA.setEditable(false);
+	            	promptTA.setOpaque(false);
 		        	speechToTextListener = new SpeechToTextListener(this);
 		        	speechToTextListener.execute();
 	        	}
@@ -87,6 +90,28 @@ public class MainWindow {
 	    });
 	}
 
+	// called by the PromptManager when his prompt is updated
+	public void updatePromptText(String newPrompt) {
+		promptTA.setText(newPrompt);
+	}
+	
+	// called after the query was deduced from the voice 
+    public void sendToQuerier(String query) {
+    	cancelButton.setEnabled(true);
+    	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
+    	System.out.println("La query est là !!" + query);
+    	lastQueryTA.setText(query);
+    	lastQuerySP.getVerticalScrollBar().setValue(lastQuerySP.getVerticalScrollBar().getMaximum());
+    	textGenQuerier = new TextGenQuerier(this, query, promptManager);
+    	textGenQuerier.execute();
+    }
+    
+    public void sendToTTS(String botAnswerToReadOutLoud) {
+    	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum()+10);
+    	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud);
+    	textToSpeechReader.execute();
+    }
+
 	private void setUpGUI() {
 		promptManager = new PromptManager(this);
 	    JFrame jFrame=new JFrame();
@@ -97,6 +122,8 @@ public class MainWindow {
 	    // Terminate app if this window is closed
 	    jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    
+	    
+	    //PROMPT AREA
 	    promptSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	    promptTA.setWrapStyleWord(true);
 	    promptTA.setLineWrap(true);
@@ -131,7 +158,8 @@ public class MainWindow {
 	                exp.printStackTrace();
 	            }
 	        }});
-
+		DefaultCaret caret = (DefaultCaret)promptTA.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 	    lastQuerySP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	    lastQueryTA.setWrapStyleWord(true);
@@ -160,28 +188,4 @@ public class MainWindow {
 	    //on affiche la fenêtre (à la fin pour que son contenu soit rafraichit
 	    jFrame.setVisible(true);
 	}
-
-	// called by the PromptManager when his prompt is updated
-	public void updatePromptText(String newPrompt) {
-		promptTA.setText(newPrompt);
-	}
-	
-	// called after the query was deduced from the voice 
-    public void sendToQuerier(String query) {
-    	cancelButton.setEnabled(true);
-    	promptTA.setEditable(false);
-    	promptTA.setOpaque(false);
-    	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
-    	System.out.println("La query est là !!" + query);
-    	lastQueryTA.setText(query);
-    	lastQuerySP.getVerticalScrollBar().setValue(lastQuerySP.getVerticalScrollBar().getMaximum());
-    	textGenQuerier = new TextGenQuerier(this, query, promptManager);
-    	textGenQuerier.execute();
-    }
-    
-    public void sendToTTS(String botAnswerToReadOutLoud) {
-    	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud);
-    	textToSpeechReader.execute();
-    }
-
 }

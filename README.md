@@ -1,6 +1,6 @@
 # LLMOfflineVoiceChat
 
-A Java frontend using [Vosk](https://github.com/alphacep/vosk-api) + [KoboldCpp](https://github.com/LostRuins/koboldcpp) + [Piper TTS](https://github.com/rhasspy/piper) **chat out loud with a Large Language Model**.
+A Java frontend using [Vosk](https://github.com/alphacep/vosk-api) + [KoboldCpp](https://github.com/LostRuins/koboldcpp) + [Piper TTS](https://github.com/rhasspy/piper) to **chat out loud with a Large Language Model**.
 
 ![demo](example.gif)
 
@@ -8,6 +8,9 @@ It's **not quite ready yet**, there is some polishing to do but it's a starting 
 
 
 ## How to use
+
+You don't, it's still WIP, but if you really want...
+
 * Download a GGUF Large Language Model.
 * Download KoboldCpp and load the GGUF.
 * Launch this app.
