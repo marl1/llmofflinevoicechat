@@ -2,12 +2,14 @@ package fr.lovc.stt;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Date;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
+import javax.swing.SwingWorker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,53 +21,64 @@ import org.vosk.Recognizer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.lovc.Main;
 import fr.lovc.stt.model.VoskText;
 import fr.lovc.textgen.TextGenQuerier;
-import fr.lovc.textgen.PromptBuilder;
 
-public class SpeechToTextListener {
+public class SpeechToTextListener extends SwingWorker {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpeechToTextListener.class);	
 
 	TextGenQuerier textGenQuerier = new TextGenQuerier();	
 	
-	public SpeechToTextListener() throws IOException, LineUnavailableException, InterruptedException {
+	@Override
+	protected Object doInBackground() throws Exception {
 	    LibVosk.setLogLevel(LogLevel.DEBUG);
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	    AudioFormat format = new AudioFormat(16000f, 16, 1, true, false);
 	    DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
-	    TargetDataLine microphone;
-	    Model model = new Model(Paths.get("").toAbsolutePath().resolve("model/vosk-model-small-en-us-0.15").toAbsolutePath().toString());
-	    try (Recognizer recognizer = new Recognizer(model, 16000)) {
-			microphone = (TargetDataLine)AudioSystem.getLine(info);
-			microphone.open(format);
-			microphone.start();
+	    TargetDataLine microphone = null;
+	    Model model;
+		try {
+			model = new Model(Paths.get("").toAbsolutePath().resolve("model/vosk-model-small-en-us-0.15").toAbsolutePath().toString());
+		    try (Recognizer recognizer = new Recognizer(model, 16000)) {
+				microphone = (TargetDataLine)AudioSystem.getLine(info);
+				microphone.open(format);
+				microphone.start();
+	
+				int numBytesRead;
+				int CHUNK_SIZE = 4096;
+				int bytesRead = 0;
+	
+				byte[] b = new byte[4096];
+	
+				while(!isCancelled()){
+				    numBytesRead = microphone.read(b, 0, CHUNK_SIZE);
+	
+				    bytesRead += numBytesRead;
+	
+				    if(recognizer.acceptWaveForm(b, numBytesRead)){
+				    	String query = objectMapper.readValue(recognizer.getResult(), VoskText.class).getText();
+				    	LOGGER.info("Detected: \"" + query + "\"");
+				    	if (!query.isEmpty()) {
+				    		//textGenQuerier.query(query);
+				    	}
+				    }
 
-			int numBytesRead;
-			int CHUNK_SIZE = 4096;
-			int bytesRead = 0;
 
-			byte[] b = new byte[4096];
-
-			while(bytesRead<=100000000){
-			    numBytesRead = microphone.read(b, 0, CHUNK_SIZE);
-
-			    bytesRead += numBytesRead;
-
-			    if(recognizer.acceptWaveForm(b, numBytesRead)){
-			    	String query = objectMapper.readValue(recognizer.getResult(), VoskText.class).getText();
-			    	LOGGER.info("Detected: \"" + query + "\"");
-			    	if (!query.isEmpty()) {
-			    		textGenQuerier.query(query);
-			    	}
-			    }
+				}
+	
+			} catch (LineUnavailableException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				if (microphone != null)
+				microphone.close();				
 			}
-
-			System.out.println(recognizer.getFinalResult());
+		} catch (IOException e) {
+	    	LOGGER.error("Cannot find speech model", e);
 		}
-
-	    microphone.close();
+		return "lol";
 	}
+
 }

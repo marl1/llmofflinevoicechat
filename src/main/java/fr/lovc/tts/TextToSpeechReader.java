@@ -38,6 +38,7 @@ public class TextToSpeechReader  {
 		Path piperPath = Paths.get("").toAbsolutePath().resolve("piper").toAbsolutePath();
 		Path sndPath = piperPath.resolve("tmp/output.wav");
 		txt = txt.replace("\n", "").replace("\r", ""); // removing eventual line breaks because would not work in the cmd line otherwise
+		txt = txt.replace("\"", ""); // removing eventual " because would not work in the cmd line otherwise
 		try {
 			Files.deleteIfExists(sndPath);
 		} catch (IOException e) {

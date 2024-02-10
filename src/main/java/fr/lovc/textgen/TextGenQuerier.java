@@ -21,18 +21,18 @@ import fr.lovc.tts.TextToSpeechReader;
 
 public class TextGenQuerier {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-	PromptBuilder promptBuilder = new PromptBuilder();
+	PromptManager promptManager = new PromptManager();
 
 
-	public void query(String query) throws IOException, InterruptedException {
+	public void query(String query) throws IOException {
 		
-		promptBuilder.addUserLineToHistory(query);
+		promptManager.addUserLineToHistory(query);
 		
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		KoboldAiGenBody koboldAiGenBody = new KoboldAiGenBody();
-		koboldAiGenBody.setPrompt(promptBuilder.build());
+		koboldAiGenBody.setPrompt(promptManager.updatePrompt());
 		String bodyInString = objectMapper.writeValueAsString(koboldAiGenBody);
 		LOGGER.info("Sending to the AI : \"" + bodyInString + "\"");
 		
@@ -42,18 +42,23 @@ public class TextGenQuerier {
 	          .POST(BodyPublishers.ofString(bodyInString))
 	          .build();
 
-	    HttpResponse<String> response =
-	          client.send(request, BodyHandlers.ofString());
+	    HttpResponse<String> response;
+		try {
+			response = client.send(request, BodyHandlers.ofString());
+		    LOGGER.info("Response from KoboldAI API:" + response.body());
+		    KoboldAiGenResponse koboldAiGenResponse = objectMapper.readValue(response.body(), KoboldAiGenResponse.class);
+		    String responseTxtOnly = koboldAiGenResponse.getResults().get(0).getText();
+		    // to remove eventual user's answer that the AI hallucinated in place of the user
+		    if(responseTxtOnly.indexOf(promptManager.getUserName()+": ") > 0) {
+		    	responseTxtOnly = responseTxtOnly.substring(0, responseTxtOnly.indexOf(promptManager.getUserName()+": ")).trim();
+		    }
+		    LOGGER.info("AI Response: \"" + responseTxtOnly + "\"");
+		    promptManager.addInterlocutorLineToHistory(responseTxtOnly);
+		    new TextToSpeechReader().read(responseTxtOnly);
+		} catch (IOException | InterruptedException e) {
+			LOGGER.error("Error connecting to KoboldAI service : \"" + bodyInString + "\"");
+		}
 
-	    LOGGER.info("Response from KoboldAI API:" + response.body());
-	    KoboldAiGenResponse koboldAiGenResponse = objectMapper.readValue(response.body(), KoboldAiGenResponse.class);
-	    String responseTxtOnly = koboldAiGenResponse.getResults().get(0).getText();
-	    // to remove eventual user's answer that the AI hallucinated in place of the user
-	    if(responseTxtOnly.indexOf(promptBuilder.getUserName()+": ") > 0) {
-	    	responseTxtOnly = responseTxtOnly.substring(0, responseTxtOnly.indexOf(promptBuilder.getUserName()+": ")).trim();
-	    }
-	    LOGGER.info("AI Response: \"" + responseTxtOnly + "\"");
-	    promptBuilder.addInterlocutorLineToHistory(responseTxtOnly);
-	    new TextToSpeechReader().read(responseTxtOnly);
+
 	}
 }

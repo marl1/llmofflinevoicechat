@@ -19,7 +19,7 @@ public class Main {
 
 		LOGGER.info("App starting.");
 		new MainWindow();
-		new SpeechToTextListener();
+		
         
 	}
 }
