@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.lovc.stt.SpeechToTextListener;
+import fr.lovc.tts.TextToSpeechReader;
 import fr.lovc.view.MainWindow;
 
 public class Main {
@@ -18,7 +19,7 @@ public class Main {
 
 		LOGGER.info("App starting.");
 		new MainWindow();
-		System.out.println("lol");
 		new SpeechToTextListener();
+        
 	}
 }
