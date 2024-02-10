@@ -16,35 +16,46 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.SwingWorker;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.lovc.Main;
+import fr.lovc.view.MainWindow;
 
-public class TextToSpeechReader  {
+public class TextToSpeechReader extends SwingWorker<Void, Void>  {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);	
 
-	public void read(String txt) {
-		Path sndPath = generateSound(txt);
-		
+	public String answerToSpeakOutLoud;
+	
+	public MainWindow mainWindow;
+	
+	public TextToSpeechReader(MainWindow mainWindow, String answerToSpeakOutLoud) {
+		super();
+		this.answerToSpeakOutLoud = answerToSpeakOutLoud;
+		this.mainWindow = mainWindow;
+	}
 
-		
+	@Override
+	protected Void doInBackground() throws Exception {
+		Path sndPath = generateSound();
 		playSound(sndPath); 
+		return null;
 	}
 	
-	public Path generateSound(String txt) {
+	public Path generateSound() {
 		Path piperPath = Paths.get("").toAbsolutePath().resolve("piper").toAbsolutePath();
 		Path sndPath = piperPath.resolve("tmp/output.wav");
-		txt = txt.replace("\n", "").replace("\r", ""); // removing eventual line breaks because would not work in the cmd line otherwise
-		txt = txt.replace("\"", ""); // removing eventual " because would not work in the cmd line otherwise
+		answerToSpeakOutLoud = answerToSpeakOutLoud.replace("\n", "").replace("\r", ""); // removing eventual line breaks because would not work in the cmd line otherwise
+		answerToSpeakOutLoud = answerToSpeakOutLoud.replace("\"", ""); // removing eventual " because would not work in the cmd line otherwise if not balanced
 		try {
 			Files.deleteIfExists(sndPath);
 		} catch (IOException e) {
 			LOGGER.error("Cannot delete " + sndPath, e);
 		}
-		String piperCmd = "echo " + txt + " | " +
+		String piperCmd = "echo \"" + answerToSpeakOutLoud + " \"| " +
 							piperPath.resolve("piper.exe") +
 							" --model " +
 							piperPath.resolve("voices/en_US-amy-low.onnx") +
@@ -93,6 +104,9 @@ public class TextToSpeechReader  {
 				int readBytes = -1;
 				while ((readBytes = audioStream.read(bufferBytes)) != -1) {
 				    sourceDataLine.write(bufferBytes, 0, readBytes);
+				    if(isCancelled()) {
+				    	break;
+				    }
 				}
 			} catch (LineUnavailableException | IOException | UnsupportedAudioFileException e) {
 				LOGGER.error("An error has occured trying to read " + sndPath,e);
@@ -112,8 +126,10 @@ public class TextToSpeechReader  {
 		} catch (IOException e) {
 			LOGGER.error("An error has occured trying to open " + sndPath, e);
 		} 
-
-         
 	}
+
+
+
+	
 
 }

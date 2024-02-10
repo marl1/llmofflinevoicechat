@@ -8,9 +8,12 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import javax.swing.SwingWorker;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,13 +21,22 @@ import fr.lovc.Main;
 import fr.lovc.textgen.model.input.KoboldAiGenBody;
 import fr.lovc.textgen.model.output.KoboldAiGenResponse;
 import fr.lovc.tts.TextToSpeechReader;
+import fr.lovc.view.MainWindow;
 
-public class TextGenQuerier {
+public class TextGenQuerier extends SwingWorker<Void, Void> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-	PromptManager promptManager = new PromptManager();
+	PromptManager promptManager;
+	MainWindow mainWindow;
+	String query = "";
 
-
-	public void query(String query) throws IOException {
+	public TextGenQuerier(MainWindow mainWindow, String query, PromptManager promptManager) {
+		this.mainWindow = mainWindow;
+		this.query = query;
+		this.promptManager = promptManager;
+	}
+	
+	@Override
+	protected Void doInBackground() {
 		
 		promptManager.addUserLineToHistory(query);
 		
@@ -32,8 +44,14 @@ public class TextGenQuerier {
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		KoboldAiGenBody koboldAiGenBody = new KoboldAiGenBody();
-		koboldAiGenBody.setPrompt(promptManager.updatePrompt());
-		String bodyInString = objectMapper.writeValueAsString(koboldAiGenBody);
+		koboldAiGenBody.setPrompt(promptManager.getCurrentPrompt());
+		String bodyInString;
+		try {
+			bodyInString = objectMapper.writeValueAsString(koboldAiGenBody);
+		} catch (JsonProcessingException e) {
+			LOGGER.error("Error in creating the input body for KoboldAI.", e);
+			throw new RuntimeException(e);
+		}
 		LOGGER.info("Sending to the AI : \"" + bodyInString + "\"");
 		
 	    HttpClient client = HttpClient.newHttpClient();
@@ -54,11 +72,14 @@ public class TextGenQuerier {
 		    }
 		    LOGGER.info("AI Response: \"" + responseTxtOnly + "\"");
 		    promptManager.addInterlocutorLineToHistory(responseTxtOnly);
-		    new TextToSpeechReader().read(responseTxtOnly);
-		} catch (IOException | InterruptedException e) {
+		    this.mainWindow.sendToTTS(responseTxtOnly);
+		} catch (InterruptedException e) {
+			LOGGER.info("Request to KoboldAI service was canceled.");
+		} catch (IOException e) {
 			LOGGER.error("Error connecting to KoboldAI service : \"" + bodyInString + "\"");
 		}
-
-
+		
+		return null;
 	}
+
 }

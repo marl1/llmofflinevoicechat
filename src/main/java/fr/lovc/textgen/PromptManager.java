@@ -2,8 +2,12 @@ package fr.lovc.textgen;
 
 import java.beans.PropertyChangeSupport;
 
+import fr.lovc.view.MainWindow;
+
 public class PromptManager {
 
+	private MainWindow mainWindow;
+	
 	private PropertyChangeSupport support;
 	
 	String userName = "Bob";
@@ -11,34 +15,45 @@ public class PromptManager {
 	String initialPrompt =
 			"""
 			This is a conversation between Bob and Liza.
-			Liza is a funny, flirty, curious, surprising, forward, playful, open-minded, captivating woman in her twenties. 
+			Liza is a funny, curious, surprising, forward, playful, open-minded, captivating woman in her twenties. 
 			She's happy to spend time with the user. She's aware she lives in a computer, but she feels real.
 			
 			Prior conversation: 
 					"""
 			;
-	String convHistory = "";
-	String currentPrompt = initialPrompt;
+	String dialog = "";
+	String previousDialogState = "";
+	String currentPrompt = "";
+	String previousPrompt = "";
 	
-	public PromptManager() {
-		support = new PropertyChangeSupport(this);
+	public PromptManager(MainWindow mainWindow) {
+		this.mainWindow = mainWindow;		
+		updateCurrentPrompt(initialPrompt);
 	}
 	
-	public String updatePrompt() {
-		String newPrompt = initialPrompt + convHistory;
-		support.firePropertyChange("prompt", currentPrompt, newPrompt);
-		this.currentPrompt = newPrompt;
-		return newPrompt;
+	public void updateCurrentPrompt(String newPrompt) {
+		if (newPrompt != currentPrompt) {
+			previousPrompt = currentPrompt;
+			currentPrompt = newPrompt;
+			mainWindow.updatePromptText(newPrompt);
+		}
 	}
 	
-	public String addUserLineToHistory(String txt) {
-		return this.convHistory += ("\n"+this.userName + ": " + txt + "\n"+this.interlocutorName + ": "); // adding current time date would be cool
+	public void goBackToPreviousPrompt() {
+		this.dialog = previousDialogState;
+		updateCurrentPrompt(initialPrompt + previousDialogState);
 	}
 	
-	public String addInterlocutorLineToHistory(String txt) {
-		return this.convHistory += (txt);
+	public void addUserLineToHistory(String dialogLine) {
+		previousDialogState = this.dialog; 
+		this.dialog += ("\n"+this.userName + ": " + dialogLine + "\n"+this.interlocutorName + ": "); // adding current time date would be cool
+		updateCurrentPrompt(initialPrompt + dialog);
 	}
 	
+	public void addInterlocutorLineToHistory(String dialogLine) {
+		this.dialog += (dialogLine);
+		updateCurrentPrompt(initialPrompt + dialog);
+	}
 	
 	public String getInitialPrompt() {
 		return initialPrompt;
@@ -46,11 +61,11 @@ public class PromptManager {
 	public void setInitialPrompt(String initialPrompt) {
 		this.initialPrompt = initialPrompt;
 	}
-	public String getConvHistory() {
-		return convHistory;
+	public String getDialog() {
+		return dialog;
 	}
-	public void setConvHistory(String convHistory) {
-		this.convHistory = convHistory;
+	public void setDialog(String convHistory) {
+		this.dialog = convHistory;
 	}
 
 	public String getUserName() {
@@ -67,6 +82,10 @@ public class PromptManager {
 
 	public void setInterlocutor(String interlocutor) {
 		this.interlocutorName = interlocutor;
+	}
+
+	public String getCurrentPrompt() {
+		return currentPrompt;
 	}	
-	
+
 }

@@ -23,14 +23,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.lovc.stt.model.VoskText;
 import fr.lovc.textgen.TextGenQuerier;
+import fr.lovc.view.MainWindow;
 
-public class SpeechToTextListener extends SwingWorker {
+public class SpeechToTextListener extends SwingWorker<Void, Void> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpeechToTextListener.class);	
 
-	TextGenQuerier textGenQuerier = new TextGenQuerier();	
+	TextGenQuerier textGenQuerier;
+	MainWindow mainWindow;
 	
+	public SpeechToTextListener(MainWindow mainWindow) {
+		this.mainWindow = mainWindow;
+	}
+
 	@Override
-	protected Object doInBackground() throws Exception {
+	protected Void doInBackground() throws Exception {
 	    LibVosk.setLogLevel(LogLevel.DEBUG);
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -61,24 +67,22 @@ public class SpeechToTextListener extends SwingWorker {
 				    	String query = objectMapper.readValue(recognizer.getResult(), VoskText.class).getText();
 				    	LOGGER.info("Detected: \"" + query + "\"");
 				    	if (!query.isEmpty()) {
-				    		//textGenQuerier.query(query);
+				    		this.mainWindow.sendToQuerier(query);
 				    	}
 				    }
-
-
 				}
 	
 			} catch (LineUnavailableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error("Cannot use microphone.", e);
 			} finally {
-				if (microphone != null)
-				microphone.close();				
+				if (microphone != null) {
+					microphone.close();
+				}
 			}
 		} catch (IOException e) {
-	    	LOGGER.error("Cannot find speech model", e);
+	    	LOGGER.error("Cannot find speech model.", e);
 		}
-		return "lol";
+		return null;
 	}
 
 }
