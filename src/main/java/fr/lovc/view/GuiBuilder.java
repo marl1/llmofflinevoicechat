@@ -11,6 +11,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
@@ -41,7 +42,7 @@ public class GuiBuilder {
 	    
 	    
 	    
-	    //PROMPT AREA
+	    //SHEET AREA
         mainWindow.promptSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         mainWindow.promptTA.setWrapStyleWord(true);
         mainWindow.promptTA.setLineWrap(true);
@@ -56,32 +57,39 @@ public class GuiBuilder {
 		mainWindow.lastQueryTA.setFocusable(true);
 		mainWindow.lastQueryTA.setOpaque(false);
 	   
-	   	    
-	    JPanel panel = new JPanel(new MigLayout());
+		JPanel panel = new JPanel(new MigLayout());
 	    
 	    JLayeredPane characterPane = new JLayeredPane();
 	    characterPane.setLayout(new MigLayout());
-	    characterPane.setBorder(BorderFactory.createTitledBorder(
-	                                        "Character sheet"));
-	    panel.add(characterPane, "span 2 , width 100%, height 30%, wrap");
+	    characterPane.setBorder(BorderFactory.createTitledBorder("Character sheet"));
+	    panel.add(characterPane, "span 2 , width 100%, height 100%, wrap");
 	    characterPane.add(new JLabel("Character sheet name:"));
 	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
 	    characterPane.add(new JLabel("User name:"));
 	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
 	    characterPane.add(new JLabel("Interlocutor name:"));
 	    characterPane.add(new JTextField("Liza"), "wmin 40%, wrap");
-	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%");
-	    characterPane.add(new JButton("Save"), "newline");
+	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%, wrap");
+	    characterPane.add(new JButton("Save"));
+	    characterPane.add(mainWindow.loadCharacterSheetButton, "");
 	    
+	    // CONVERSATION
 	    JLayeredPane conversationPane = new JLayeredPane();
 	    conversationPane.setLayout(new MigLayout());
 	    conversationPane.setBorder(BorderFactory.createTitledBorder(
 	                                        "Conversation"));
-	    panel.add(conversationPane, "span 2 , width 100%, height 50%");
+	    panel.add(conversationPane, "span 2 , width 100%, height 30%");
 	    mainWindow.conversationEP.setEditable(false);
 	    mainWindow.conversationEP.setContentType("text/html");
 	    conversationPane.add(mainWindow.conversationSP, "width 100%, height 100%");
+
+	    // SHEET + CONVERSATION
+	    JSplitPane mainSplitPane = new JSplitPane( 
+	    JSplitPane.VERTICAL_SPLIT, characterPane, conversationPane);
+	    mainSplitPane.setResizeWeight( 0.33 );
+	    panel.add(mainSplitPane, "span 2 2, wrap, width 100%, height 80%");
 	    
+	    // QUERY
 	    JLayeredPane queryPane = new JLayeredPane();
 	    queryPane.setLayout(new MigLayout());
 	    queryPane.setBorder(BorderFactory.createTitledBorder(

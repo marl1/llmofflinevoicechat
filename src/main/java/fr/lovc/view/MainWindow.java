@@ -1,5 +1,6 @@
 package fr.lovc.view;
 
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,7 +53,8 @@ public class MainWindow {
     JTextArea lastQueryTA = new JTextArea();
     JScrollPane lastQuerySP = new JScrollPane(lastQueryTA);
     JButton cancelButton = new JButton();
-    JMenuItem mnuOpenFile = new JMenuItem( "Open File ..." );
+    JMenuItem mnuOpenFile = new JMenuItem( "Open character sheet..." );
+    JButton loadCharacterSheetButton = new JButton("Load");
 	
 	public MainWindow() {
 		promptManager = new PromptManager(this);
@@ -69,7 +71,7 @@ public class MainWindow {
 		addCancelEventListener();
 	    
 	    // open file
-	    mnuOpenFile.addActionListener((actionEvent) -> {
+	    ActionListener loadAction = (actionEvent) -> {
 	    	final JFileChooser fc = new JFileChooser(Paths.get("").toAbsolutePath().toString());
 	    	int returnVal = fc.showOpenDialog(jFrame);
 	        if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -89,7 +91,9 @@ public class MainWindow {
 	        		this.promptManager.updateCurrentPrompt(characterSheet.description());
 	        	}
 	        }
-	    });
+	    };
+	    mnuOpenFile.addActionListener(loadAction);
+	    loadCharacterSheetButton.addActionListener(loadAction);
 	}
 
 	/**
