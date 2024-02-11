@@ -40,23 +40,13 @@ public class GuiBuilder {
         menuBar.add(mnuFile);
         mainWindow.jFrame.setJMenuBar(menuBar);
 	    
-	    
-	    
 	    //SHEET AREA
         mainWindow.promptSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         mainWindow.promptTA.setWrapStyleWord(true);
         mainWindow.promptTA.setLineWrap(true);
+        mainWindow.promptTA.setFont(mainWindow.promptTA.getFont().deriveFont(14f));
 	    UndoRedoUtil.setUpUndoRedo(mainWindow.promptTA);
-		DefaultCaret caret = (DefaultCaret)mainWindow.promptTA.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-		mainWindow.lastQuerySP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		mainWindow.lastQueryTA.setWrapStyleWord(true);
-		mainWindow.lastQueryTA.setLineWrap(true);
-		mainWindow.lastQueryTA.setEditable(false);
-		mainWindow.lastQueryTA.setFocusable(true);
-		mainWindow.lastQueryTA.setOpaque(false);
-	   
 		JPanel panel = new JPanel(new MigLayout());
 	    
 	    JLayeredPane characterPane = new JLayeredPane();
@@ -64,24 +54,28 @@ public class GuiBuilder {
 	    characterPane.setBorder(BorderFactory.createTitledBorder("Character sheet"));
 	    panel.add(characterPane, "span 2 , width 100%, height 100%, wrap");
 	    characterPane.add(new JLabel("Character sheet name:"));
-	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
+	    characterPane.add(mainWindow.characterSheetName, "wmin 40%, wrap");
 	    characterPane.add(new JLabel("User name:"));
-	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
+	    characterPane.add(mainWindow.userName, "wmin 40%, wrap");
 	    characterPane.add(new JLabel("Interlocutor name:"));
-	    characterPane.add(new JTextField("Liza"), "wmin 40%, wrap");
+	    characterPane.add(mainWindow.botName, "wmin 40%, wrap");
 	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%, wrap");
 	    characterPane.add(new JButton("Save"));
 	    characterPane.add(mainWindow.loadCharacterSheetButton, "");
 	    
 	    // CONVERSATION
 	    JLayeredPane conversationPane = new JLayeredPane();
+        mainWindow.conversationSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        mainWindow.conversationTA.setWrapStyleWord(true);
+        mainWindow.conversationTA.setLineWrap(true);
+        mainWindow.conversationTA.setFont(mainWindow.conversationTA.getFont().deriveFont(14f));
 	    conversationPane.setLayout(new MigLayout());
 	    conversationPane.setBorder(BorderFactory.createTitledBorder(
 	                                        "Conversation"));
 	    panel.add(conversationPane, "span 2 , width 100%, height 30%");
-	    mainWindow.conversationEP.setEditable(false);
-	    mainWindow.conversationEP.setContentType("text/html");
 	    conversationPane.add(mainWindow.conversationSP, "width 100%, height 100%");
+		DefaultCaret conversationTACaret = (DefaultCaret)mainWindow.conversationTA.getCaret();
+		conversationTACaret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 	    // SHEET + CONVERSATION
 	    JSplitPane mainSplitPane = new JSplitPane( 
@@ -94,13 +88,12 @@ public class GuiBuilder {
 	    queryPane.setLayout(new MigLayout());
 	    queryPane.setBorder(BorderFactory.createTitledBorder(
 	                                        "Query"));
-	    panel.add(queryPane, "newline, span 2 , width 100%, height 20%, wrap");
+	    panel.add(queryPane, "newline, span 2 , width 100%, wrap");
 
 	    queryPane.add(mainWindow.listeningButton, "wrap");
-	    queryPane.add(mainWindow.lastQuerySP, "width 100%, height 100%");
 	    mainWindow.cancelButton.setText("Cancel query");
 	    queryPane.add(mainWindow.cancelButton, "newline");
-	    
+	    queryPane.add(mainWindow.sendQueryManuallyButton, "newline");
 
 	    //on associe le JPanel à notre fenêtre
 	    mainWindow.jFrame.setContentPane(panel);

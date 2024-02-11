@@ -11,16 +11,15 @@ import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-
-import org.slf4j.LoggerFactory;
+import javax.swing.JTextField;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.lovc.internaldata.CharacterSheetLoader;
 import fr.lovc.internaldata.model.CharacterSheet;
@@ -46,15 +45,17 @@ public class MainWindow {
 	
     JFrame jFrame=new JFrame();
     JTextArea promptTA = new JTextArea();
+    JTextField characterSheetName = new JTextField("Todo");
+    JTextField userName = new JTextField("User");
+    JTextField botName = new JTextField("Bot");
     JScrollPane promptSP = new JScrollPane(promptTA);
     JCheckBox listeningButton = new JCheckBox("Listen to me");
-    JEditorPane conversationEP = new JEditorPane();
-    JScrollPane conversationSP = new JScrollPane(conversationEP);
-    JTextArea lastQueryTA = new JTextArea();
-    JScrollPane lastQuerySP = new JScrollPane(lastQueryTA);
+    JTextArea conversationTA = new JTextArea();
+    JScrollPane conversationSP = new JScrollPane(conversationTA);
     JButton cancelButton = new JButton();
     JMenuItem mnuOpenFile = new JMenuItem( "Open character sheet..." );
     JButton loadCharacterSheetButton = new JButton("Load");
+    JButton sendQueryManuallyButton = new JButton("Send query manually");
 	
 	public MainWindow() {
 		promptManager = new PromptManager(this);
@@ -70,6 +71,12 @@ public class MainWindow {
 		
 		addCancelEventListener();
 	    
+		sendQueryManuallyButton.addActionListener((actionEvent) -> { 
+        		this.promptManager.setInitialPrompt(promptTA.getText()); //we update with a new prompt
+        		this.promptManager.setDialog(conversationTA.getText()); //we update with a new prompt
+        		this.sendToQuerier(promptManager.getFullPrompt());
+				});
+
 	    // open file
 	    ActionListener loadAction = (actionEvent) -> {
 	    	final JFileChooser fc = new JFileChooser(Paths.get("").toAbsolutePath().toString());
@@ -89,6 +96,8 @@ public class MainWindow {
 				}
 	        	if (characterSheet != null) {
 	        		this.promptManager.updateCurrentPrompt(characterSheet.description());
+	        		this.promptManager.setUserName(characterSheet.userName());
+	        		this.promptManager.setBotName(characterSheet.botName());
 	        	}
 	        }
 	    };
@@ -106,8 +115,12 @@ public class MainWindow {
 	        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 	        	if (speechToTextListener == null) {
 	        		// if we check the box and don't have any tts listener already
+	        		this.promptManager.setInitialPrompt(promptTA.getText()); //we update with a new prompt
+	        		this.promptManager.setDialog(conversationTA.getText()); //we update with a new prompt
 	            	promptTA.setEditable(false); //we block the prompt...
 	            	promptTA.setOpaque(false); //...from being edited
+	            	conversationTA.setEditable(false); //same for the conversation
+	            	conversationTA.setOpaque(false);
 		        	speechToTextListener = new SpeechToTextListener(this); //create a new swing worker
 		        	speechToTextListener.execute();
 	        	}
@@ -116,6 +129,8 @@ public class MainWindow {
 	        	speechToTextListener = null; //...we delete it, cannot reuse swing anyway.
 	        	promptTA.setEditable(true); //we also reactivate the prompt editing.
 	        	promptTA.setOpaque(true);
+            	conversationTA.setEditable(true); //same for the conversation
+            	conversationTA.setOpaque(true);
 		    	if (this.textGenQuerier != null) {
 		    		textGenQuerier.cancel(true); //we also cancel other swing workers such as text query...
 		    	}
@@ -128,8 +143,8 @@ public class MainWindow {
 
 	
 	/**
-	 * To cancel an ongoing query. For instance, if the user regret what he had just say, he can clic the cancel
-	 * button to withdraw it from history.
+	 * To cancel an ongoing query. For instance, if the user regret what he had just say, he can click the
+	 * cancel button to withdraw it from history.
 	 * It should also cancel the query and sound player.
 	 */
 	private void addCancelEventListener() {
@@ -140,28 +155,25 @@ public class MainWindow {
 	    	if (this.textGenQuerier != null) {
 	    		cancelButton.setEnabled(false);
 	    		textGenQuerier.cancel(true);
-	    		promptManager.goBackToPreviousPrompt();
+	    		promptManager.goBackToPreviousDialogLine();
 	    	}
 	    	if (this.textToSpeechReader != null) {
 	    		cancelButton.setEnabled(false);
 	    		textToSpeechReader.cancel(true);
-	    		promptManager.goBackToPreviousPrompt();
+	    		promptManager.goBackToPreviousDialogLine();
 	    	}
 	    });
 	}
-
-	// called by the PromptManager when his prompt is updated
-	public void updatePromptText(String newPrompt) {
-		promptTA.setText(newPrompt);
-	}
 	
-	// called after the query was deduced from the voice 
+	
+	/**
+	 * To send the query to KoboldCpp backend. Called just after the query string was deduced 
+	 * from the voice.
+	 */
     public void sendToQuerier(String query) {
     	cancelButton.setEnabled(true);
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
     	System.out.println("La query est là !!" + query);
-    	lastQueryTA.setText(query);
-    	lastQuerySP.getVerticalScrollBar().setValue(lastQuerySP.getVerticalScrollBar().getMaximum());
     	textGenQuerier = new TextGenQuerier(this, query, promptManager);
     	textGenQuerier.execute();
     }
@@ -171,5 +183,26 @@ public class MainWindow {
     	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud);
     	textToSpeechReader.execute();
     }
+
+	// called by the PromptManager when his prompt is updated
+	public void updatePromptText(String newPrompt) {
+		promptTA.setText(newPrompt);
+	}
+	
+	// called by the PromptManager when his prompt is updated
+	public void updateUserName(String newName) {
+		userName.setText(newName);
+	}
+	
+	// called by the PromptManager when his prompt is updated
+	public void updateCharacterName(String newName) {
+		botName.setText(newName);
+	}
+	
+	// called by the PromptManager whenthe dialog is updated
+	public void updateConversationText(String newConversationLine) {
+		conversationTA.setText(newConversationLine);
+    	conversationSP.getVerticalScrollBar().setValue(conversationSP.getVerticalScrollBar().getMaximum());
+	}
 
 }

@@ -44,7 +44,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		
 		KoboldAiGenBody koboldAiGenBody = new KoboldAiGenBody();
-		koboldAiGenBody.setPrompt(promptManager.getCurrentPrompt());
+		koboldAiGenBody.setPrompt(promptManager.getFullPrompt());
 		String bodyInString;
 		try {
 			bodyInString = objectMapper.writeValueAsString(koboldAiGenBody);

@@ -11,7 +11,7 @@ public class PromptManager {
 	private PropertyChangeSupport support;
 	
 	String userName = "User";
-	String interlocutorName= "Assistant";
+	String botName= "Assistant";
 	String initialPrompt =
 			"""
 			This is a conversation between the user and an helpful A.I. assistant.
@@ -37,20 +37,26 @@ public class PromptManager {
 		}
 	}
 	
-	public void goBackToPreviousPrompt() {
+	public String getFullPrompt() {
+			return currentPrompt + dialog;
+	}
+	
+	public void goBackToPreviousDialogLine() {
 		this.dialog = previousDialogState;
-		updateCurrentPrompt(initialPrompt + previousDialogState);
+		mainWindow.updateConversationText(dialog);
 	}
 	
 	public void addUserLineToHistory(String dialogLine) {
-		previousDialogState = this.dialog; 
-		this.dialog += ("\n"+this.userName + ": " + dialogLine + "\n"+this.interlocutorName + ": "); // adding current time date would be cool
-		updateCurrentPrompt(initialPrompt + dialog);
+		previousDialogState = this.dialog;
+		if (!this.dialog.isBlank()) { this.dialog += System.lineSeparator(); }
+		this.dialog += this.userName + ": " + dialogLine + System.lineSeparator() + this.botName + ": "; // adding current time date would be cool
+		mainWindow.updateConversationText(dialog);
+
 	}
 	
 	public void addInterlocutorLineToHistory(String dialogLine) {
 		this.dialog += (dialogLine);
-		updateCurrentPrompt(initialPrompt + dialog);
+		mainWindow.updateConversationText(dialog);
 	}
 	
 	public String getInitialPrompt() {
@@ -62,8 +68,8 @@ public class PromptManager {
 	public String getDialog() {
 		return dialog;
 	}
-	public void setDialog(String convHistory) {
-		this.dialog = convHistory;
+	public void setDialog(String dialog) {
+		this.dialog = dialog;
 	}
 
 	public String getUserName() {
@@ -72,14 +78,16 @@ public class PromptManager {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+		mainWindow.updateUserName(this.userName);
 	}
 
-	public String getInterlocutor() {
-		return interlocutorName;
+	public String getBotName() {
+		return botName;
 	}
 
-	public void setInterlocutor(String interlocutor) {
-		this.interlocutorName = interlocutor;
+	public void setBotName(String botName) {
+		this.botName = botName;
+		mainWindow.updateCharacterName(this.botName);
 	}
 
 	public String getCurrentPrompt() {
