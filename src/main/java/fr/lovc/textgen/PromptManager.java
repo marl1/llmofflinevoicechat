@@ -10,17 +10,15 @@ public class PromptManager {
 	
 	private PropertyChangeSupport support;
 	
-	String userName = "Bob";
-	String interlocutorName= "Liza";
+	String userName = "User";
+	String interlocutorName= "Assistant";
 	String initialPrompt =
 			"""
-			This is a conversation between Bob and Liza.
-			Liza is a funny, curious, surprising, forward, playful, open-minded, captivating woman in her twenties. 
-			She's happy to spend time with the user. She's aware she lives in a computer, but she feels real.
+			This is a conversation between the user and an helpful A.I. assistant.
+            The assistant will help Bob with all his requests.
 			
 			Prior conversation: 
-					"""
-			;
+					""";
 	String dialog = "";
 	String previousDialogState = "";
 	String currentPrompt = "";

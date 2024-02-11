@@ -26,7 +26,7 @@ import fr.lovc.view.MainWindow;
 
 public class TextToSpeechReader extends SwingWorker<Void, Void>  {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);	
+	private static final Logger LOGGER = LoggerFactory.getLogger(TextToSpeechReader.class);	
 
 	public String answerToSpeakOutLoud;
 	

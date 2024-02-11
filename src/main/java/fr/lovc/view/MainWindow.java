@@ -1,36 +1,39 @@
 package fr.lovc.view;
 
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.text.DefaultCaret;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 
+import org.slf4j.LoggerFactory;
+
+import org.slf4j.Logger;
+
+import fr.lovc.internaldata.CharacterSheetLoader;
+import fr.lovc.internaldata.model.CharacterSheet;
 import fr.lovc.stt.SpeechToTextListener;
 import fr.lovc.textgen.PromptManager;
 import fr.lovc.textgen.TextGenQuerier;
 import fr.lovc.tts.TextToSpeechReader;
-import net.miginfocom.swing.MigLayout;
 
+/**
+ * @author Aka
+ *
+ */
 public class MainWindow {
-		
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainWindow.class);	
+
 	PromptManager promptManager;
 
 	SpeechToTextListener speechToTextListener;
@@ -39,41 +42,91 @@ public class MainWindow {
 	
 	TextToSpeechReader textToSpeechReader;
 	
+    JFrame jFrame=new JFrame();
     JTextArea promptTA = new JTextArea();
     JScrollPane promptSP = new JScrollPane(promptTA);
     JCheckBox listeningButton = new JCheckBox("Listen to me");
     JTextArea lastQueryTA = new JTextArea();
     JScrollPane lastQuerySP = new JScrollPane(lastQueryTA);
     JButton cancelButton = new JButton("Cancel query");
+    JMenuItem mnuOpenFile = new JMenuItem( "Open File ..." );
 	
 	public MainWindow() {
-		setUpGUI();
+		promptManager = new PromptManager(this);
+
+		GuiBuilder.setUpGUI(this);
 	    
 	    setUpListeners();
 	}
 
 	private void setUpListeners() {
+		// listening checkbox
+		addListenButtonEventListener();
+		
+		addCancelEventListener();
+	    
+	    // open file
+	    mnuOpenFile.addActionListener((actionEvent) -> {
+	    	final JFileChooser fc = new JFileChooser(Paths.get("").toAbsolutePath().toString());
+	    	int returnVal = fc.showOpenDialog(jFrame);
+	        if (returnVal == JFileChooser.APPROVE_OPTION) {
+	            File file = fc.getSelectedFile();
+	            CharacterSheet characterSheet = null;
+	        	try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));) {
+		        	String line = "";
+		        	String textFileContent = "";
+		        	while ((line = bufferedReader.readLine()) != null) {
+		        		textFileContent += line + System.lineSeparator();
+		        	}
+		        	characterSheet = CharacterSheetLoader.load(textFileContent);
+	            } catch (IOException e) {
+	            	LOGGER.error(String.format("Cannot read file \"%s\"", file), e);
+				}
+	        	if (characterSheet != null) {
+	        		this.promptManager.updateCurrentPrompt(characterSheet.description());
+	        	}
+	        }
+	    });
+	}
+
+	/**
+	 * A method to activate/deactivate the microphone speech recgonition.
+	 * Should also keep from editing the prompt because it is send at the end of this method
+	 * and we don't want a mismacth between what is showed, what is sent.
+	 */
+	private void addListenButtonEventListener() {
 		listeningButton.addItemListener((itemEvent) -> {
 	        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 	        	if (speechToTextListener == null) {
-	            	promptTA.setEditable(false);
-	            	promptTA.setOpaque(false);
-		        	speechToTextListener = new SpeechToTextListener(this);
+	        		// if we check the box and don't have any tts listener already
+	            	promptTA.setEditable(false); //we block the prompt...
+	            	promptTA.setOpaque(false); //...from being edited
+		        	speechToTextListener = new SpeechToTextListener(this); //create a new swing worker
 		        	speechToTextListener.execute();
 	        	}
 	        } else {
-	        	speechToTextListener.cancel(true);
-	        	speechToTextListener = null;
-	        	promptTA.setEditable(true);
+	        	speechToTextListener.cancel(true); //if the swing worker responsible for listening has been cancelled...
+	        	speechToTextListener = null; //...we delete it, cannot reuse swing anyway.
+	        	promptTA.setEditable(true); //we also reactivate the prompt editing.
 	        	promptTA.setOpaque(true);
 		    	if (this.textGenQuerier != null) {
-		    		textGenQuerier.cancel(true);
+		    		textGenQuerier.cancel(true); //we also cancel other swing workers such as text query...
 		    	}
 		    	if (this.textToSpeechReader != null) {
-		    		textToSpeechReader.cancel(true);
+		    		textToSpeechReader.cancel(true); //...and sound reading.
 		    	}
 	        }
 	    });
+	}
+
+	
+	/**
+	 * To cancel an ongoing query. For instance, if the user regret what he had just say, he can clic the cancel
+	 * button to withdraw it from history.
+	 * It should also cancel the query and sound player.
+	 */
+	private void addCancelEventListener() {
+		// cancel query button
 	    cancelButton.setEnabled(false);
 	    cancelButton.addActionListener((actionEvent) -> 
 	    {
@@ -112,80 +165,4 @@ public class MainWindow {
     	textToSpeechReader.execute();
     }
 
-	private void setUpGUI() {
-		promptManager = new PromptManager(this);
-	    JFrame jFrame=new JFrame();
-	    jFrame.setTitle("");
-	    jFrame.setSize(600, 500);
-	        jFrame.setLocationRelativeTo(null);
-
-	    // Terminate app if this window is closed
-	    jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    
-	    
-	    //PROMPT AREA
-	    promptSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    promptTA.setWrapStyleWord(true);
-	    promptTA.setLineWrap(true);
-	    UndoManager undoManager = new UndoManager();
-	    promptTA.getDocument().addUndoableEditListener(undoManager);
-	    
-	    InputMap im = promptTA.getInputMap(JComponent.WHEN_FOCUSED);
-	    ActionMap am = promptTA.getActionMap();
-
-	    im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Undo");
-	    im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "Redo");
-
-	    am.put("Undo", new AbstractAction() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            try {
-	                if (undoManager.canUndo()) {
-	                    undoManager.undo();
-	                }
-	            } catch (CannotUndoException exp) {
-	                exp.printStackTrace();
-	            }
-	        }});
-	    am.put("Redo", new AbstractAction() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            try {
-	                if (undoManager.canRedo()) {
-	                    undoManager.redo();
-	                }
-	            } catch (CannotUndoException exp) {
-	                exp.printStackTrace();
-	            }
-	        }});
-		DefaultCaret caret = (DefaultCaret)promptTA.getCaret();
-		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-
-	    lastQuerySP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-	    lastQueryTA.setWrapStyleWord(true);
-        lastQueryTA.setLineWrap(true);
-        lastQueryTA.setEditable(false);
-        lastQueryTA.setFocusable(true);
-        lastQueryTA.setOpaque(false);
-	   
-	   	    
-	    JPanel panel = new JPanel(new MigLayout());
-	    panel.add(new JLabel("User name:"));
-	    panel.add(new JTextField("Bob"), "wmin 40%, wrap");
-	    panel.add(new JLabel("Interlocutor name:"));
-	    panel.add(new JTextField("Liza"), "wmin 40%, wrap");
-	    panel.add(new JLabel("Prompt:"), "wrap");
-	    panel.add(promptSP, "span 3, wmin 90%, height 100%, wrap");
-	    panel.add(listeningButton, "wrap");
-	    panel.add(new JLabel("Last query:"),"wrap");
-	    panel.add(lastQuerySP, "span 2, wmin 60%, height 60%");
-	    panel.add(cancelButton, "span 2, wrap");
-	    
-
-	    //on associe le JPanel à notre fenêtre
-	    jFrame.setContentPane(panel);
-	    
-	    //on affiche la fenêtre (à la fin pour que son contenu soit rafraichit
-	    jFrame.setVisible(true);
-	}
 }
