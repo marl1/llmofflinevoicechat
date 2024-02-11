@@ -1,8 +1,13 @@
 package fr.lovc.view;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -17,7 +22,7 @@ public class GuiBuilder {
 
 	public static void setUpGUI(MainWindow mainWindow) {
 	    mainWindow.jFrame.setTitle("");
-	    mainWindow.jFrame.setSize(600, 500);
+	    mainWindow.jFrame.setSize(800, 900);
 	        mainWindow.jFrame.setLocationRelativeTo(null);
 
 	    // Terminate app if this window is closed
@@ -53,16 +58,40 @@ public class GuiBuilder {
 	   
 	   	    
 	    JPanel panel = new JPanel(new MigLayout());
-	    panel.add(new JLabel("User name:"));
-	    panel.add(new JTextField("Bob"), "wmin 40%, wrap");
-	    panel.add(new JLabel("Interlocutor name:"));
-	    panel.add(new JTextField("Liza"), "wmin 40%, wrap");
-	    panel.add(new JLabel("Prompt:"), "wrap");
-	    panel.add(mainWindow.promptSP, "span 3, wmin 90%, height 100%, wrap");
-	    panel.add(mainWindow.listeningButton, "wrap");
-	    panel.add(new JLabel("Last query:"),"wrap");
-	    panel.add(mainWindow.lastQuerySP, "span 2, wmin 60%, height 60%");
-	    panel.add(mainWindow.cancelButton, "span 2, wrap");
+	    
+	    JLayeredPane characterPane = new JLayeredPane();
+	    characterPane.setLayout(new MigLayout());
+	    characterPane.setBorder(BorderFactory.createTitledBorder(
+	                                        "Character sheet"));
+	    panel.add(characterPane, "span 2 , width 100%, height 30%, wrap");
+	    characterPane.add(new JLabel("Character sheet name:"));
+	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
+	    characterPane.add(new JLabel("User name:"));
+	    characterPane.add(new JTextField("Bob"), "wmin 40%, wrap");
+	    characterPane.add(new JLabel("Interlocutor name:"));
+	    characterPane.add(new JTextField("Liza"), "wmin 40%, wrap");
+	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%");
+	    characterPane.add(new JButton("Save"), "newline");
+	    
+	    JLayeredPane conversationPane = new JLayeredPane();
+	    conversationPane.setLayout(new MigLayout());
+	    conversationPane.setBorder(BorderFactory.createTitledBorder(
+	                                        "Conversation"));
+	    panel.add(conversationPane, "span 2 , width 100%, height 50%");
+	    mainWindow.conversationEP.setEditable(false);
+	    mainWindow.conversationEP.setContentType("text/html");
+	    conversationPane.add(mainWindow.conversationSP, "width 100%, height 100%");
+	    
+	    JLayeredPane queryPane = new JLayeredPane();
+	    queryPane.setLayout(new MigLayout());
+	    queryPane.setBorder(BorderFactory.createTitledBorder(
+	                                        "Query"));
+	    panel.add(queryPane, "newline, span 2 , width 100%, height 20%, wrap");
+
+	    queryPane.add(mainWindow.listeningButton, "wrap");
+	    queryPane.add(mainWindow.lastQuerySP, "width 100%, height 100%");
+	    mainWindow.cancelButton.setText("Cancel query");
+	    queryPane.add(mainWindow.cancelButton, "newline");
 	    
 
 	    //on associe le JPanel à notre fenêtre

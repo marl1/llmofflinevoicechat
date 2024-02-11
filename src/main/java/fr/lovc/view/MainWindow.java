@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -46,9 +47,11 @@ public class MainWindow {
     JTextArea promptTA = new JTextArea();
     JScrollPane promptSP = new JScrollPane(promptTA);
     JCheckBox listeningButton = new JCheckBox("Listen to me");
+    JEditorPane conversationEP = new JEditorPane();
+    JScrollPane conversationSP = new JScrollPane(conversationEP);
     JTextArea lastQueryTA = new JTextArea();
     JScrollPane lastQuerySP = new JScrollPane(lastQueryTA);
-    JButton cancelButton = new JButton("Cancel query");
+    JButton cancelButton = new JButton();
     JMenuItem mnuOpenFile = new JMenuItem( "Open File ..." );
 	
 	public MainWindow() {
