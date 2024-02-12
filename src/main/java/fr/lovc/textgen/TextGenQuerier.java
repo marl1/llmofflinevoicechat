@@ -96,7 +96,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 			    }
 			    return false;
 			});
-
+			this.stopGen();
 		    LOGGER.info("AI full response: \"" + linesConcatenation + "\"");
 		    promptManager.addInterlocutorLineToHistory(linesConcatenation.toString());
 		    if (linesConcatenation.toString() != "") {
@@ -112,4 +112,17 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 		return null;
 	}
 
+	private void stopGen() {
+		try {
+			HttpClient.newHttpClient().send(
+  	  HttpRequest.newBuilder()
+			 .uri(URI.create("http://localhost:5001/api/extra/abort"))
+			 .POST(BodyPublishers.ofString("{\"genkey\": \"lovc\"}"))
+			 .timeout(Duration.ofSeconds(120))
+			 .build()
+			 , BodyHandlers.ofString()).body();
+		} catch (IOException | InterruptedException e) {
+			LOGGER.error("Exception when trying to cancel the ongoing request", e);
+		} 
+	}
 }
