@@ -2,7 +2,7 @@ package fr.lovc.textgen.model.input;
 
 public class KoboldAiGenBody {
 	private int max_context_length = 2048;
-	private int max_length = 100;
+	private int max_length = 300;
 	private  String prompt = "";
 	private boolean quiet = false;
 	private double rep_pen = 1.1;

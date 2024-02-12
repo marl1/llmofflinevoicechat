@@ -5,9 +5,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
+import java.util.stream.Stream;
 
 import javax.swing.SwingWorker;
 
@@ -20,8 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.lovc.Main;
 import fr.lovc.textgen.model.input.KoboldAiGenBody;
-import fr.lovc.textgen.model.output.KoboldAiGenResponse;
-import fr.lovc.tts.TextToSpeechReader;
+import fr.lovc.textgen.model.output.see.KoboldAiData;
 import fr.lovc.view.MainWindow;
 
 public class TextGenQuerier extends SwingWorker<Void, Void> {
@@ -60,24 +59,50 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 		
 	    HttpClient client = HttpClient.newHttpClient();
 	    HttpRequest request = HttpRequest.newBuilder()
-	          .uri(URI.create("http://localhost:5001/api/v1/generate"))
+	          .uri(URI.create("http://localhost:5001/api/extra/generate/stream"))
 	          .POST(BodyPublishers.ofString(bodyInString))
 	          .timeout(Duration.ofSeconds(120))
 	          .build();
 
-	    HttpResponse<String> response;
+	    Stream<String> linesInResponse;
 		try {
-			response = client.send(request, BodyHandlers.ofString());
-		    LOGGER.info("Response from KoboldAI API:" + response.body());
-		    KoboldAiGenResponse koboldAiGenResponse = objectMapper.readValue(response.body(), KoboldAiGenResponse.class);
-		    String responseTxtOnly = koboldAiGenResponse.getResults().get(0).getText();
-		    // to remove eventual user's answer that the AI hallucinated in place of the user
-		    if(responseTxtOnly.indexOf(promptManager.getUserName()+": ") > 0) {
-		    	responseTxtOnly = responseTxtOnly.substring(0, responseTxtOnly.indexOf(promptManager.getUserName()+": ")).trim();
+			StringBuilder linesConcatenation = new StringBuilder();
+			linesInResponse = client.send(request, BodyHandlers.ofLines()).body();
+			linesInResponse
+			.filter(line -> line.startsWith("data: {"))
+			.map((line) -> {
+					line = line.substring("data: {".length()-1, line.length());
+					try {
+						LOGGER.info("Response from KoboldAI API:" + line);
+						KoboldAiData koboldAiData = objectMapper.readValue(line, KoboldAiData.class);
+						linesConcatenation.append(koboldAiData.token());
+						LOGGER.info("Concatened response from KoboldAI API:" + linesConcatenation);
+
+					} catch (JsonProcessingException e) {
+						LOGGER.info("Couldn't read response from KoboldAI API:", e);
+					}
+				return linesConcatenation;
+			})
+			.anyMatch(sb -> {
+				if(this.isCancelled()) {
+					linesConcatenation.delete(0, linesConcatenation.length());
+					return true;
+				}
+				// we stop if the bot starts to hallucinate the user response
+				int hallucinatedUserAnswerPosition = linesConcatenation.indexOf("\n" + promptManager.getUserName()+": ");
+			    if( hallucinatedUserAnswerPosition >= 0) { 
+			    	 linesConcatenation.delete(hallucinatedUserAnswerPosition, linesConcatenation.length());
+			    	 return true;
+			    }
+			    return false;
+			});
+
+		    LOGGER.info("AI full response: \"" + linesConcatenation + "\"");
+		    promptManager.addInterlocutorLineToHistory(linesConcatenation.toString());
+		    if (linesConcatenation.toString() != "") {
+		    	this.mainWindow.sendToTTS(linesConcatenation.toString());
 		    }
-		    LOGGER.info("AI Response: \"" + responseTxtOnly + "\"");
-		    promptManager.addInterlocutorLineToHistory(responseTxtOnly);
-		    this.mainWindow.sendToTTS(responseTxtOnly);
+
 		} catch (InterruptedException e) {
 			LOGGER.info("Request to KoboldAI service was canceled.");
 		} catch (IOException e) {
