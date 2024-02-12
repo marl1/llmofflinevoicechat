@@ -67,7 +67,7 @@ public class SpeechToTextListener extends SwingWorker<Void, Void> {
 				    	String query = objectMapper.readValue(recognizer.getResult(), VoskText.class).getText();
 				    	LOGGER.info("Detected: \"" + query + "\"");
 				    	if (!query.isEmpty()) {
-				    		this.mainWindow.sendToQuerier(query);
+				    		this.mainWindow.sendQueryToQuerier(query);
 				    	}
 				    }
 				}

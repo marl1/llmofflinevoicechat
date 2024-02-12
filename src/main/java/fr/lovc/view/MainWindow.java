@@ -74,7 +74,7 @@ public class MainWindow {
 		sendQueryManuallyButton.addActionListener((actionEvent) -> { 
         		this.promptManager.setInitialPrompt(promptTA.getText()); //we update with a new prompt
         		this.promptManager.setDialog(conversationTA.getText()); //we update with a new prompt
-        		this.sendToQuerier(promptManager.getFullPrompt());
+        		this.sendFullPromptToQuerier(promptManager.getFullPrompt());
 				});
 
 	    // open file
@@ -170,14 +170,24 @@ public class MainWindow {
 	 * To send the query to KoboldCpp backend. Called just after the query string was deduced 
 	 * from the voice.
 	 */
-    public void sendToQuerier(String query) {
+    public void sendQueryToQuerier(String query) {
     	cancelButton.setEnabled(true);
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
     	System.out.println("La query est là !!" + query);
-    	textGenQuerier = new TextGenQuerier(this, query, promptManager);
+    	textGenQuerier = new TextGenQuerier(this, query, null, promptManager);
     	textGenQuerier.execute();
     }
     
+	/**
+	 * To send a FULL PROMPT to to KoboldCpp backend. To be refactored, a bit ridiculous to have
+	 * two methods so similar. The have sendQueryToQuerier will suffice when I'll have individual dialog lines.
+	 */
+    public void sendFullPromptToQuerier(String fullPrompt) {
+    	cancelButton.setEnabled(true);
+    	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
+    	textGenQuerier = new TextGenQuerier(this, null, fullPrompt, promptManager);
+    	textGenQuerier.execute();
+    }
     public void sendToTTS(String botAnswerToReadOutLoud) {
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum()+10);
     	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud);

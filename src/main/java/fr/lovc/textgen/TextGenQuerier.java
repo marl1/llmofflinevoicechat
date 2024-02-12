@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Duration;
 
 import javax.swing.SwingWorker;
 
@@ -28,17 +29,20 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 	PromptManager promptManager;
 	MainWindow mainWindow;
 	String query = "";
+	String fullPrompt = "";
 
-	public TextGenQuerier(MainWindow mainWindow, String query, PromptManager promptManager) {
+	public TextGenQuerier(MainWindow mainWindow, String query, String fullPrompt, PromptManager promptManager) {
 		this.mainWindow = mainWindow;
 		this.query = query;
 		this.promptManager = promptManager;
+		this.fullPrompt = fullPrompt;
 	}
 	
 	@Override
 	protected Void doInBackground() {
-		
-		promptManager.addUserLineToHistory(query);
+		if (query != null) { // distinguish between full prompt sending and query. Not good. To be refactored when I'll have individual dialog lines.
+			promptManager.addUserLineToHistory(query);
+		}
 		
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -58,6 +62,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 	    HttpRequest request = HttpRequest.newBuilder()
 	          .uri(URI.create("http://localhost:5001/api/v1/generate"))
 	          .POST(BodyPublishers.ofString(bodyInString))
+	          .timeout(Duration.ofSeconds(120))
 	          .build();
 
 	    HttpResponse<String> response;
@@ -76,7 +81,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 		} catch (InterruptedException e) {
 			LOGGER.info("Request to KoboldAI service was canceled.");
 		} catch (IOException e) {
-			LOGGER.error("Error connecting to KoboldAI service : \"" + bodyInString + "\"");
+			LOGGER.error("Error connecting to KoboldAI service : \"" + bodyInString + "\"", e);
 		}
 		
 		return null;
