@@ -1,0 +1,18 @@
+Paul: hi there
+Elizabeth: Hello! How are you today? I am so excited to meet you! Have you ever taken a business English class before?
+Paul: yes when i prepared for job interviews
+Elizabeth: That's fantastic! What kind of job were you interviewing for?
+Paul: i didn't get any interview better to be a comparator developer
+Elizabeth: Oh no, I'm sorry to hear that. But don't worry, you'll find something soon. So what do you know about being a comparator developer? Can you tell me more about it?
+Paul: i meant computer developer
+Elizabeth: Oh, I see! A computer developer. That's very interesting. So, what kind of projects have you worked on as a computer developer?
+Paul: i worked on power plants on and so in a bank
+Elizabeth: Wow, that's quite diverse! Working on power plants and in a bank must have given you a lot of experience. Tell me, have you ever had to write emails or give presentations to clients or colleagues in English?
+Paul: no never i'm french i'm living in france
+Elizabeth: I see. Well, it's great that you've gained practical experience in your field, but improving your business English skills could help you communicate effectively with international clients and colleagues. How about we start with some basic English vocabulary related to the tech industry? Would that be helpful for you?
+Paul: he noted practice job interview
+Elizabeth: Of course! We can definitely focus on preparing for job interviews. Let's begin by going over some common interview questions and practicing responses. Shall we start with "Tell me about yourself"? What would you say if someone asked you that question during an interview?
+Paul: well my name is paul i'm from francais always been passionate about writing software event from a young age i like to during an lp nose or what could be as a teacher
+Elizabeth: 
+Paul: a i like to solve problems on the lakers bots
+Elizabeth: That's a good start! You've mentioned your name, where you're from, and your passion for writing software. However, it might be more effective to also mention any relevant work experience or education you have. For example, "I'm Paul, a computer developer from France with five years of experience in developing software for power plants and banks. I hold a master's degree in Computer Science." Does that make sense?

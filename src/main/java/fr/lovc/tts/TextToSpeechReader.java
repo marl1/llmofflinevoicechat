@@ -59,11 +59,11 @@ public class TextToSpeechReader extends SwingWorker<Void, Void>  {
 							piperPath.resolve("piper.exe") +
 							" --model " +
 							piperPath.resolve("voices/en_US-amy-low.onnx") +
-							" --output_file " +
+							" --speaker 0  --output_file " +
 							piperPath.resolve("tmp/output.wav");
 		LOGGER.info("Text sent to tts: \"" + piperCmd + "\"");
 		
-	    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/C", piperCmd);
+	    ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe","chcp 852", "/C", piperCmd);
 
         processBuilder.redirectInput();
         processBuilder.redirectOutput();

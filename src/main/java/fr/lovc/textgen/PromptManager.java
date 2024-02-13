@@ -10,12 +10,12 @@ public class PromptManager {
 	
 	private PropertyChangeSupport support;
 	
-	String userName = "User";
-	String botName= "Assistant";
+	String userPrefix = "User";
+	String botPrefix= "Assistant";
 	String initialPrompt =
 			"""
 			This is a conversation between the user and an helpful A.I. assistant.
-            The assistant will help Bob with all his requests.
+            The assistant will help the user with all his requests.
 			
 			Prior conversation: 
 					""";
@@ -49,7 +49,7 @@ public class PromptManager {
 	public void addUserLineToHistory(String dialogLine) {
 		previousDialogState = this.dialog;
 		if (!this.dialog.isBlank()) { this.dialog += System.lineSeparator(); }
-		this.dialog += this.userName + ": " + dialogLine + System.lineSeparator() + this.botName + ": "; // adding current time date would be cool
+		this.dialog += this.userPrefix + dialogLine + System.lineSeparator() + this.botPrefix; // adding current time date would be cool
 		mainWindow.updateConversationText(dialog);
 
 	}
@@ -72,22 +72,22 @@ public class PromptManager {
 		this.dialog = dialog;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUserPrefix() {
+		return userPrefix;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
-		mainWindow.updateUserName(this.userName);
+	public void setUserPrefix(String userName) {
+		this.userPrefix = userName;
+		mainWindow.updateUserName(this.userPrefix);
 	}
 
-	public String getBotName() {
-		return botName;
+	public String getBotPrefix() {
+		return botPrefix;
 	}
 
-	public void setBotName(String botName) {
-		this.botName = botName;
-		mainWindow.updateCharacterName(this.botName);
+	public void setBotPrefix(String botName) {
+		this.botPrefix = botName;
+		mainWindow.updateCharacterName(this.botPrefix);
 	}
 
 	public String getCurrentPrompt() {

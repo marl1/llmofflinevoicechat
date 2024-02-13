@@ -89,7 +89,8 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 					return true;
 				}
 				// we stop if the bot starts to hallucinate the user response
-				int hallucinatedUserAnswerPosition = linesConcatenation.indexOf("\n" + promptManager.getUserName()+": ");
+				int hallucinatedUserAnswerPosition = linesConcatenation.indexOf("\n" + promptManager.getUserPrefix());
+				hallucinatedUserAnswerPosition = hallucinatedUserAnswerPosition<0?linesConcatenation.indexOf("\n" + promptManager.getUserPrefix()+" : "):hallucinatedUserAnswerPosition;
 			    if( hallucinatedUserAnswerPosition >= 0) { 
 			    	 linesConcatenation.delete(hallucinatedUserAnswerPosition, linesConcatenation.length());
 			    	 return true;

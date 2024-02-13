@@ -96,8 +96,8 @@ public class MainWindow {
 				}
 	        	if (characterSheet != null) {
 	        		this.promptManager.updateCurrentPrompt(characterSheet.description());
-	        		this.promptManager.setUserName(characterSheet.userName());
-	        		this.promptManager.setBotName(characterSheet.botName());
+	        		this.promptManager.setUserPrefix(characterSheet.userPrefix());
+	        		this.promptManager.setBotPrefix(characterSheet.botPrefix());
 	        	}
 	        }
 	    };

@@ -8,12 +8,13 @@ public class KoboldAiGenBody {
 	private double rep_pen = 1.1;
 	private int rep_pen_range = 256;
 	private int rep_pen_slope = 1;
-	private double temperature = 0.5;
+	private double temperature = 0.4;
 	private int tfs = 1;
 	private int top_a = 0;
 	private int top_k = 100;
-	private double top_p = 0.9;
+	private double top_p = 0.1;
 	private int typical = 1;
+	private String genkey = "lovc";
 	
 	public void setPrompt(String prompt) {
 		this.prompt = prompt;
@@ -118,7 +119,13 @@ public class KoboldAiGenBody {
 	public String getPrompt() {
 		return prompt;
 	}
-	
-	
+
+	public String getGenkey() {
+		return genkey;
+	}
+
+	public void setGenkey(String genkey) {
+		this.genkey = genkey;
+	}
 	
 }
