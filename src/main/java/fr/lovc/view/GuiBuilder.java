@@ -1,7 +1,5 @@
 package fr.lovc.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
@@ -12,7 +10,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.DefaultCaret;
@@ -55,10 +52,12 @@ public class GuiBuilder {
 	    panel.add(characterPane, "span 2 , width 100%, height 100%, wrap");
 	    characterPane.add(new JLabel("Character sheet name:"));
 	    characterPane.add(mainWindow.characterSheetName, "wmin 40%, wrap");
-	    characterPane.add(new JLabel("User name:"));
-	    characterPane.add(mainWindow.userName, "wmin 40%, wrap");
-	    characterPane.add(new JLabel("Interlocutor name:"));
-	    characterPane.add(mainWindow.botName, "wmin 40%, wrap");
+	    characterPane.add(new JLabel("User prefix:"));
+	    characterPane.add(mainWindow.userPrefix, "wmin 40%, wrap");
+	    characterPane.add(new JLabel("Bot prefix:"));
+	    characterPane.add(mainWindow.botPrefix, "wmin 40%, wrap");
+	    characterPane.add(new JLabel("Bot voice:"));
+	    characterPane.add(mainWindow.botVoice, "wmin 40%, wrap");
 	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%, wrap");
 	    characterPane.add(new JButton("Save"));
 	    characterPane.add(mainWindow.loadCharacterSheetButton, "");
@@ -90,10 +89,11 @@ public class GuiBuilder {
 	                                        "Query"));
 	    panel.add(queryPane, "newline, span 2 , width 100%, wrap");
 
-	    queryPane.add(mainWindow.listeningButton, "wrap");
-	    mainWindow.cancelButton.setText("Cancel query");
-	    queryPane.add(mainWindow.cancelButton, "newline");
+	    queryPane.add(mainWindow.listeningButton);
 	    queryPane.add(mainWindow.sendQueryManuallyButton, "newline");
+	    mainWindow.cancelButton.setText("Cancel query");
+	    queryPane.add(mainWindow.cancelButton,"align right");
+	    queryPane.add(mainWindow.progressBar, "newline, span 2, width 100%");
 
 	    //on associe le JPanel à notre fenêtre
 	    mainWindow.jFrame.setContentPane(panel);

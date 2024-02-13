@@ -66,6 +66,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 
 	    Stream<String> linesInResponse;
 		try {
+			mainWindow.resetProgressBar();
 			StringBuilder linesConcatenation = new StringBuilder();
 			linesInResponse = client.send(request, BodyHandlers.ofLines()).body();
 			linesInResponse
@@ -76,6 +77,9 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 						LOGGER.info("Response from KoboldAI API:" + line);
 						KoboldAiData koboldAiData = objectMapper.readValue(line, KoboldAiData.class);
 						linesConcatenation.append(koboldAiData.token());
+						this.mainWindow.progressBar.setValue(this.mainWindow.progressBar.getValue()+1);
+						this.mainWindow.progressBar.setStringPainted(true);
+						this.mainWindow.progressBar.setString(this.mainWindow.progressBar.getValue() + "/300"); //fixme
 						LOGGER.info("Concatened response from KoboldAI API:" + linesConcatenation);
 
 					} catch (JsonProcessingException e) {
@@ -98,6 +102,7 @@ public class TextGenQuerier extends SwingWorker<Void, Void> {
 			    return false;
 			});
 			this.stopGen();
+			mainWindow.resetProgressBar();
 		    LOGGER.info("AI full response: \"" + linesConcatenation + "\"");
 		    promptManager.addInterlocutorLineToHistory(linesConcatenation.toString());
 		    if (linesConcatenation.toString() != "") {

@@ -14,6 +14,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -46,8 +47,9 @@ public class MainWindow {
     JFrame jFrame=new JFrame();
     JTextArea promptTA = new JTextArea();
     JTextField characterSheetName = new JTextField("Todo");
-    JTextField userName = new JTextField("User");
-    JTextField botName = new JTextField("Bot");
+    JTextField userPrefix = new JTextField("User");
+    JTextField botPrefix = new JTextField("Bot");
+    JTextField botVoice = new JTextField("en_US-amy-low.onnx");
     JScrollPane promptSP = new JScrollPane(promptTA);
     JCheckBox listeningButton = new JCheckBox("Listen to me");
     JTextArea conversationTA = new JTextArea();
@@ -56,7 +58,8 @@ public class MainWindow {
     JMenuItem mnuOpenFile = new JMenuItem( "Open character sheet..." );
     JButton loadCharacterSheetButton = new JButton("Load");
     JButton sendQueryManuallyButton = new JButton("Send query manually");
-	
+    public JProgressBar progressBar = new JProgressBar();
+
 	public MainWindow() {
 		promptManager = new PromptManager(this);
 
@@ -72,8 +75,8 @@ public class MainWindow {
 		addCancelEventListener();
 	    
 		sendQueryManuallyButton.addActionListener((actionEvent) -> { 
-        		this.promptManager.setInitialPrompt(promptTA.getText()); //we update with a new prompt
-        		this.promptManager.setDialog(conversationTA.getText()); //we update with a new prompt
+				this.promptManager.updateCurrentPrompt(promptTA.getText()); //we update with a new prompt
+        		this.promptManager.setDialog(conversationTA.getText());
         		this.sendFullPromptToQuerier(promptManager.getFullPrompt());
 				});
 
@@ -98,6 +101,7 @@ public class MainWindow {
 	        		this.promptManager.updateCurrentPrompt(characterSheet.description());
 	        		this.promptManager.setUserPrefix(characterSheet.userPrefix());
 	        		this.promptManager.setBotPrefix(characterSheet.botPrefix());
+	        		this.botVoice.setText(characterSheet.botVoice());
 	        	}
 	        }
 	    };
@@ -115,8 +119,8 @@ public class MainWindow {
 	        if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
 	        	if (speechToTextListener == null) {
 	        		// if we check the box and don't have any tts listener already
-	        		this.promptManager.setInitialPrompt(promptTA.getText()); //we update with a new prompt
-	        		this.promptManager.setDialog(conversationTA.getText()); //we update with a new prompt
+	        		this.promptManager.updateCurrentPrompt(promptTA.getText()); //we update with a new prompt
+	        		this.promptManager.setDialog(conversationTA.getText());
 	            	promptTA.setEditable(false); //we block the prompt...
 	            	promptTA.setOpaque(false); //...from being edited
 	            	conversationTA.setEditable(false); //same for the conversation
@@ -174,8 +178,10 @@ public class MainWindow {
     	cancelButton.setEnabled(true);
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
     	System.out.println("La query est là !!" + query);
-    	textGenQuerier = new TextGenQuerier(this, query, null, promptManager);
-    	textGenQuerier.execute();
+    	if (this.textGenQuerier == null || !this.textGenQuerier.isCancelled()) {
+    		textGenQuerier = new TextGenQuerier(this, query, null, promptManager);
+    		textGenQuerier.execute();
+    	}
     }
     
 	/**
@@ -190,7 +196,7 @@ public class MainWindow {
     }
     public void sendToTTS(String botAnswerToReadOutLoud) {
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum()+10);
-    	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud);
+    	this.textToSpeechReader = new TextToSpeechReader(this, botAnswerToReadOutLoud, this.botVoice.getText());
     	textToSpeechReader.execute();
     }
 
@@ -201,18 +207,25 @@ public class MainWindow {
 	
 	// called by the PromptManager when his prompt is updated
 	public void updateUserName(String newName) {
-		userName.setText(newName);
+		userPrefix.setText(newName);
 	}
 	
 	// called by the PromptManager when his prompt is updated
 	public void updateCharacterName(String newName) {
-		botName.setText(newName);
+		botPrefix.setText(newName);
 	}
 	
 	// called by the PromptManager whenthe dialog is updated
 	public void updateConversationText(String newConversationLine) {
 		conversationTA.setText(newConversationLine);
     	conversationSP.getVerticalScrollBar().setValue(conversationSP.getVerticalScrollBar().getMaximum());
+	}
+	
+	public void resetProgressBar() {
+		this.progressBar.setMaximum(300); // todo fixme
+		this.progressBar.setMinimum(0);
+		this.progressBar.setValue(0);
+		this.progressBar.setString(" ");
 	}
 
 }

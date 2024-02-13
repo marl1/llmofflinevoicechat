@@ -28,7 +28,6 @@ import fr.lovc.view.MainWindow;
 public class SpeechToTextListener extends SwingWorker<Void, Void> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SpeechToTextListener.class);	
 
-	TextGenQuerier textGenQuerier;
 	MainWindow mainWindow;
 	
 	public SpeechToTextListener(MainWindow mainWindow) {

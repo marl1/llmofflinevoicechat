@@ -8,7 +8,7 @@ public class KoboldAiGenBody {
 	private double rep_pen = 1.1;
 	private int rep_pen_range = 256;
 	private int rep_pen_slope = 1;
-	private double temperature = 0.4;
+	private double temperature = 0.5;
 	private int tfs = 1;
 	private int top_a = 0;
 	private int top_k = 100;

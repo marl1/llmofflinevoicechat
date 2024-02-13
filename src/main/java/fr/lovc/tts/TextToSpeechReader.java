@@ -30,12 +30,15 @@ public class TextToSpeechReader extends SwingWorker<Void, Void>  {
 
 	public String answerToSpeakOutLoud;
 	
+	public String botVoice;
+	
 	public MainWindow mainWindow;
 	
-	public TextToSpeechReader(MainWindow mainWindow, String answerToSpeakOutLoud) {
+	public TextToSpeechReader(MainWindow mainWindow, String answerToSpeakOutLoud, String botVoice) {
 		super();
 		this.answerToSpeakOutLoud = answerToSpeakOutLoud;
 		this.mainWindow = mainWindow;
+		this.botVoice = botVoice;
 	}
 
 	@Override
@@ -58,7 +61,7 @@ public class TextToSpeechReader extends SwingWorker<Void, Void>  {
 		String piperCmd = "echo \"" + answerToSpeakOutLoud + " \"| " +
 							piperPath.resolve("piper.exe") +
 							" --model " +
-							piperPath.resolve("voices/en_US-amy-low.onnx") +
+							piperPath.resolve("voices/").resolve(botVoice) +
 							" --speaker 0  --output_file " +
 							piperPath.resolve("tmp/output.wav");
 		LOGGER.info("Text sent to tts: \"" + piperCmd + "\"");
