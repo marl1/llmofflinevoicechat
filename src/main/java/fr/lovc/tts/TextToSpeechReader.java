@@ -21,7 +21,6 @@ import javax.swing.SwingWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.lovc.Main;
 import fr.lovc.view.MainWindow;
 
 public class TextToSpeechReader extends SwingWorker<Void, Void>  {

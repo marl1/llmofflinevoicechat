@@ -178,7 +178,7 @@ public class MainWindow {
     	cancelButton.setEnabled(true);
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
     	System.out.println("La query est là !!" + query);
-    	if (this.textGenQuerier == null || !this.textGenQuerier.isCancelled()) {
+    	if (this.textGenQuerier == null || this.textGenQuerier.isCancelled() ||  this.textGenQuerier.isDone()) {
     		textGenQuerier = new TextGenQuerier(this, query, null, promptManager);
     		textGenQuerier.execute();
     	}
@@ -191,8 +191,10 @@ public class MainWindow {
     public void sendFullPromptToQuerier(String fullPrompt) {
     	cancelButton.setEnabled(true);
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum());
-    	textGenQuerier = new TextGenQuerier(this, null, fullPrompt, promptManager);
-    	textGenQuerier.execute();
+    	if (this.textGenQuerier == null || this.textGenQuerier.isCancelled() ||  this.textGenQuerier.isDone()) {
+    		textGenQuerier = new TextGenQuerier(this, null, fullPrompt, promptManager);
+    		textGenQuerier.execute();
+    	}
     }
     public void sendToTTS(String botAnswerToReadOutLoud) {
     	promptSP.getVerticalScrollBar().setValue(promptSP.getVerticalScrollBar().getMaximum()+10);
