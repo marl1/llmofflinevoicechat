@@ -59,8 +59,8 @@ public class GuiBuilder {
 	    characterPane.add(new JLabel("Bot voice:"));
 	    characterPane.add(mainWindow.botVoice, "wmin 40%, wrap");
 	    characterPane.add(mainWindow.promptSP, "span 2, width 100%, height 100%, wrap");
-	    characterPane.add(new JButton("Save"));
-	    characterPane.add(mainWindow.loadCharacterSheetButton, "");
+	    characterPane.add(new JButton("Save"), "split 2");
+	    characterPane.add(mainWindow.loadCharacterSheetButton, "gapleft 100");
 	    
 	    // CONVERSATION
 	    JLayeredPane conversationPane = new JLayeredPane();
@@ -69,12 +69,13 @@ public class GuiBuilder {
         mainWindow.conversationTA.setLineWrap(true);
         mainWindow.conversationTA.setFont(mainWindow.conversationTA.getFont().deriveFont(14f));
 	    conversationPane.setLayout(new MigLayout());
-	    conversationPane.setBorder(BorderFactory.createTitledBorder(
-	                                        "Conversation"));
-	    panel.add(conversationPane, "span 2 , width 100%, height 30%");
-	    conversationPane.add(mainWindow.conversationSP, "width 100%, height 100%");
+	    conversationPane.setBorder(BorderFactory.createTitledBorder("Conversation"));
+	    panel.add(conversationPane, "span 2, width 100%, height 30%");
+	    conversationPane.add(mainWindow.conversationSP, "span 2, width 100%, height 100%");
 		DefaultCaret conversationTACaret = (DefaultCaret)mainWindow.conversationTA.getCaret();
 		conversationTACaret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		conversationPane.add(mainWindow.saveConvButton, "newline");
+		conversationPane.add(mainWindow.loadConvButton, "gapleft 100");
 
 	    // SHEET + CONVERSATION
 	    JSplitPane mainSplitPane = new JSplitPane( 

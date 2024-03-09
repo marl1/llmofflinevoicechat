@@ -57,6 +57,8 @@ public class MainWindow {
     JButton cancelButton = new JButton();
     JMenuItem mnuOpenFile = new JMenuItem( "Open character sheet..." );
     JButton loadCharacterSheetButton = new JButton("Load");
+    JButton loadConvButton = new JButton("Load");
+    JButton saveConvButton = new JButton("Save");
     JButton sendQueryManuallyButton = new JButton("Send query manually");
     public JProgressBar progressBar = new JProgressBar();
 
